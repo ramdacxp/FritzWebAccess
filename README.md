@@ -1,27 +1,65 @@
 # FritzWebAccess
-This repository contains a little C# console application which demonstates the web access to a **AVM Fritz!Box** running **FRITZ!OS 5.50 or higher**.
-
+This repository contains a little C# console application which demonstates the web- and SOAP TR064- access to a **AVM Fritz!Box** running **FRITZ!OS 5.50 or higher**.
 
 ## Usage
-The console application has to be executed with the fritz box password as command line argument.
+The console application has to be executed with the fritz box password as command line argument. If the optional second argument is given, the WLAN can be enabled/disabled.
 
-  `FritzWebAccess.exe MyPassword`
+  `FritzWebAccess.exe MyPassword [1|0]`
 
-On the console the session id an auth status together with todays calls are displayed:
+On the console the following info is displayed:
+* **Web Access**
+  * session id
+  * auth status 
+  * list of telephone calls (in and out) of the current day (as XML fragments)
+* **SOAP Access**
+  * number of registered clients
+  * total number of bytes sent and received
+  * properties of the fritz box wan access (type, max. rates and status)
+  * current DSL info (status, current/max up/down rates, noise margin and attenuation)
+  * the external ip address
+  * WLAN info (if enabled, status, channel and SSID name)
 
 ```
+Web Access
+~~~~~~~~~~
 SessionId: 08fdedbd3e31c9ef
 IsAuthenticated: True
 
-<Call><Id>2941</Id><Type>1</Type><Caller>03012345</Caller><Called>SIP: 12345</Called><CalledNumber>12345</CalledNumber><Name>Mustermann, Max</Name><Numbertype>sip</Numbertype><Device>Office-Phone</Device><Port>13</Port><Date>01.01.17 13:33</Date><Duration>0:11</Duration><Count></Count><Path /></Call>
+<Call>
+  <Id>2941</Id>
+  <Type>1</Type>
+  <Caller>03012345</Caller>
+  <Called>SIP: 12345</Called>
+  <CalledNumber>12345</CalledNumber>
+  <Name>Mustermann , Max</Name>
+  <Numbertype>sip</Numbertype>
+  <Device>Office-Phone</Device>
+  <Port>13</Port>
+  <Date>01.01.17 13:33</Date>
+  <Duration>0:11</Duration>
+  <Count></Count>
+  <Path />
+</Call>
+<Call>
+  <Id>2940</Id>
+  ...
+</Call>
 
-<Call><Id>2940</Id><Type>1</Type><Caller>03056789</Caller><Called>SIP: 12345</Called><CalledNumber>12345</CalledNumber><Name>Musterfrau, Monika</Name><Numbertype>sip</Numbertype><Device>Office-Phone</Device><Port>13</Port><Date>01.01.17 11:56</Date><Duration>0:03</Duration><Count></Count><Path /></Call>
-
-(Return)
+SOAP Access
+~~~~~~~~~~~
+HostNumberOfEntries:  13
+TotalBytesSent:       140177460
+TotalBytesReceived:   1498279811
+CommonLinkProperties: AccessType: DSL, MaxUpstreamBitRate: 1065000, MaxDownstreamBitRate: 12088000, Status: Up
+DslInterfaceInfo:     Status: Up, Up/Down- RateCurrent: 1061/11263, RateMax: 1065/12088, NoiseMargin: 100/100, Attenuation: 130/260
+ExternalIPAddress:    92.194.40.11
+WirelessLanInfo:      IsEnabled: True, Status: Up, Channel: 5, SSID: MyWLanNetwork
 ```
 
 ## API
-The API to do this is very simple.
+The API to do this is pretty simple.
+
+### Web Access
 
 ```
 var f = new FritzWebAccess();
@@ -36,13 +74,55 @@ Console.WriteLine("IsAuthenticated: {0}", f.IsAuthenticated);
 var callerInfo = f.GetCallHistory(1);
 ```
 
+### SOAP / TR064 Access
+
+```
+var soap = new FritzSoapAccess
+{
+    Password = password
+};
+
+if ( setWirelessLan )
+{
+    Console.Write("SetWirelessLan({0}) ...", enableWirelessLan);
+    soap.SetWirelessLan(enableWirelessLan);
+    Console.WriteLine(" Done.");
+}
+
+Console.WriteLine("HostNumberOfEntries:  {0}", soap.GetHostNumberOfEntries());
+Console.WriteLine("TotalBytesSent:       {0}", soap.GetTotalBytesSent());
+Console.WriteLine("TotalBytesReceived:   {0}", soap.GetTotalBytesReceived());
+
+Console.WriteLine("CommonLinkProperties: {0}", soap.GetCommonLinkProperties());
+Console.WriteLine("DslInterfaceInfo:     {0}", soap.GetDslInterfaceInfo());
+Console.WriteLine("ExternalIPAddress:    {0}", soap.GetExternalIPAddress());
+Console.WriteLine("WirelessLanInfo:      {0}", soap.GetWirelessLanInfo());
+```
+
+The more complex types are exposed as own classes. Other data will be returned as `string`.
+
+* `CommonLinkProperties`
+* `DslInterfaceInfo`
+* `WirelessLanInfo`
+
+
+## Todo
+
+* Support additional TR064 statements, e.g. complete the hosts interface
+* Release as library
+* Nuget Packages
+* Port to .Net Core
+* Better error handling
+
+Feel free to contribute. :)
+
 ## License
 This code is based on the
 [AVM development documentation](https://avm.de/service/schnittstellen/).
 HTTP Session API and program samples can be found
 [here](https://avm.de/fileadmin/user_upload/Global/Service/Schnittstellen/AVM_Technical_Note_-_Session_ID.pdf).
 
-If not stated otherwise, it is released under the following
+If not stated otherwise, the code is released under the following
 [MIT License](https://opensource.org/licenses/MIT):
 
 Copyright 2017 Michael Hoser
