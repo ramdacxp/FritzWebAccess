@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace FritzWebAccess
 {
@@ -12,8 +13,11 @@ namespace FritzWebAccess
                 return;
             }
 
+            var password = args[0];
+
+
             var f = new FritzWebAccess();
-            f.LogIn(args[0]);
+            f.LogIn(password);
 
             Console.WriteLine("SessionId: {0}", f.SessionId);
             Console.WriteLine("IsAuthenticated: {0}", f.IsAuthenticated);
@@ -31,9 +35,37 @@ namespace FritzWebAccess
                 }
             }
 
+            // ----------------------------------------------------------
+
+            Console.WriteLine("SOAP Tests");
+
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) =>
+            {
+                /// Console.WriteLine("Allowing HTTPS for: {0}", certificate.Issuer);
+                return true;
+            };
+
+            var soap = new FritzSoapAccess
+            {
+                Password = password
+            };
+
+            Console.WriteLine("HostNumberOfEntries:  {0}", soap.GetHostNumberOfEntries());
+            Console.WriteLine("TotalBytesSent:       {0}", soap.GetTotalBytesSent());
+            Console.WriteLine("TotalBytesReceived:   {0}", soap.GetTotalBytesReceived());
+
+            Console.WriteLine("CommonLinkProperties: {0}", soap.GetCommonLinkProperties());
+            Console.WriteLine("DslInterfaceInfo:     {0}", soap.GetDslInterfaceInfo());
+            Console.WriteLine("ExternalIPAddress:    {0}", soap.GetExternalIPAddress());
+            Console.WriteLine("WirelessLanInfo:      {0}", soap.GetWirelessLanInfo());
+
+            
+
             Console.WriteLine("\n(Return)");
             Console.ReadLine();
         }
+
+
 
 
     }
