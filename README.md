@@ -21,7 +21,7 @@ On the console the following info is displayed:
 
 ```
 Web Access
-~~~~~~~~~~
+
 SessionId: 08fdedbd3e31c9ef
 IsAuthenticated: True
 
@@ -46,7 +46,7 @@ IsAuthenticated: True
 </Call>
 
 SOAP Access
-~~~~~~~~~~~
+
 HostNumberOfEntries:  13
 TotalBytesSent:       140177460
 TotalBytesReceived:   1498279811
