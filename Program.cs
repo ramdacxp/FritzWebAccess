@@ -9,12 +9,19 @@ namespace FritzWebAccess
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("Usage: FritzWebAccess <Password>");
+                Console.WriteLine("Usage: FritzWebAccess <Password> [1|0]");
+                Console.WriteLine("Optional 2nd parameter enables/disables WLAN.");
                 return;
             }
 
             var password = args[0];
+            bool setWirelessLan = args.Length == 2;
+            bool enableWirelessLan = setWirelessLan && (args[1] == "1");
 
+            // *******************************************************************************************
+
+            Console.WriteLine("\nWeb Access");
+            Console.WriteLine("~~~~~~~~~~");
 
             var f = new FritzWebAccess();
             f.LogIn(password);
@@ -35,9 +42,10 @@ namespace FritzWebAccess
                 }
             }
 
-            // ----------------------------------------------------------
+            // *******************************************************************************************
 
-            Console.WriteLine("SOAP Tests");
+            Console.WriteLine("\nSOAP Access");
+            Console.WriteLine("~~~~~~~~~~~");
 
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) =>
             {
@@ -50,6 +58,13 @@ namespace FritzWebAccess
                 Password = password
             };
 
+            if ( setWirelessLan )
+            {
+                Console.Write("SetWirelessLan({0}) ...", enableWirelessLan);
+                soap.SetWirelessLan(enableWirelessLan);
+                Console.WriteLine(" Done.");
+            }
+
             Console.WriteLine("HostNumberOfEntries:  {0}", soap.GetHostNumberOfEntries());
             Console.WriteLine("TotalBytesSent:       {0}", soap.GetTotalBytesSent());
             Console.WriteLine("TotalBytesReceived:   {0}", soap.GetTotalBytesReceived());
@@ -59,13 +74,11 @@ namespace FritzWebAccess
             Console.WriteLine("ExternalIPAddress:    {0}", soap.GetExternalIPAddress());
             Console.WriteLine("WirelessLanInfo:      {0}", soap.GetWirelessLanInfo());
 
-            
+            // *******************************************************************************************
 
             Console.WriteLine("\n(Return)");
             Console.ReadLine();
         }
-
-
 
 
     }

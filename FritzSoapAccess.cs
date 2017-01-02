@@ -189,11 +189,37 @@ namespace FritzWebAccess
                 "urn:dslforum-org:service:WLANConfiguration:1#GetInfo"
                 );
 
-            return new StreamReader(response.GetResponseStream()).ReadToEnd();
+            var values = GetElementValues(
+                response.GetResponseStream(),
+                new string[]
+                {
+                    "NewEnable",
+                    "NewStatus",
+                    "NewChannel",
+                    "NewSSID"
+                });
+
+            return new WirelessLanInfo
+            {
+                IsEnabled = values["NewEnable"] == "1",
+                Status = values["NewStatus"],
+                Channel = values["NewChannel"],
+                SSID = values["NewSSID"]
+            };
         }
 
+        public void SetWirelessLan(bool enable)
+        {
+            SendSoapRequest(
+                "tr064/upnp/control/wlanconfig1",
+                "urn:dslforum-org:service:WLANConfiguration:1#SetEnable",
+                new Dictionary<string, string>
+                {
+                    {"NewEnable" , enable ? "1" : "0"}
+                });
+        }
 
-        private HttpWebResponse SendSoapRequest(string relativeUrl, string soapAction)
+        private HttpWebResponse SendSoapRequest(string relativeUrl, string soapAction, Dictionary<string, string> soapActionParameters = null)
         {
             // build absolute addr
             var requestAddress = new Uri(BaseAddress, relativeUrl);
@@ -212,7 +238,19 @@ namespace FritzWebAccess
             streamWriter.WriteLine(@"<?xml version=""1.0"" encoding=""utf-8""?>");
             streamWriter.WriteLine(@"<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"">");
             streamWriter.WriteLine(@"<s:Body>");
-            streamWriter.WriteLine(@"<{1} xmlns=""{0}"" />", SoapActionParts[0], SoapActionParts[1]);
+            if (soapActionParameters == null)
+            {
+                streamWriter.WriteLine(@"<{1} xmlns=""{0}""/>", SoapActionParts[0], SoapActionParts[1]);
+            }
+            else
+            {
+                streamWriter.WriteLine(@"<{1} xmlns=""{0}"">", SoapActionParts[0], SoapActionParts[1]);
+                foreach (string parameterName in soapActionParameters.Keys)
+                {
+                    streamWriter.WriteLine(@"<{0}>{1}</{0}>", parameterName, soapActionParameters[parameterName]);
+                }
+                streamWriter.WriteLine(@"</{0}>", SoapActionParts[1]);
+            }
             streamWriter.WriteLine(@"</s:Body>");
             streamWriter.WriteLine(@"</s:Envelope>");
             streamWriter.Close();
