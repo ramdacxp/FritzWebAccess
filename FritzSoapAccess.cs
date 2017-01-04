@@ -92,6 +92,47 @@ namespace FritzWebAccess
             return -1;
         }
 
+        public HostInfo GetGenericHostEntryExt(int index)
+        {
+            var response = SendSoapRequest(
+                "tr064/upnp/control/hosts",
+                "urn:dslforum-org:service:Hosts:1#X_AVM-DE_GetGenericHostEntryExt",
+                new Dictionary<string, string>
+                {
+                    {"NewIndex" , index.ToString()}
+                });
+
+            var values = GetElementValues(
+                response.GetResponseStream(),
+                new string[]
+                {
+                    "NewIPAddress",
+                    "NewMACAddress",
+                    "NewActive",
+                    "NewHostName",
+                    "NewInterfaceType",
+                    "NewX_AVM-DE_Port",
+                    "NewX_AVM-DE_Speed",
+                    // "NewX_AVM-DE_UpdateAvailable",
+                    // "NewX_AVM-DE_UpdateSuccessful",
+                    // "NewX_AVM-DE_InfoURL",
+                    // "NewX_AVM-DE_Model",
+                    // "NewX_AVM-DE_URL",
+                });
+
+            return new HostInfo
+            {
+                IPAddress = values["NewIPAddress"],
+                MACAddress = values["NewMACAddress"],
+                IsActive = values["NewActive"] == "1",
+                HostName = values["NewHostName"],
+                InterfaceType = values["NewInterfaceType"],
+                Port = values["NewX_AVM-DE_Port"],
+                Speed = values["NewX_AVM-DE_Speed"],
+            };
+        }
+
+
         public int GetTotalBytesSent()
         {
             var response = SendSoapRequest(

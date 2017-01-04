@@ -65,7 +65,6 @@ namespace FritzWebAccess
                 Console.WriteLine(" Done.");
             }
 
-            Console.WriteLine("HostNumberOfEntries:  {0}", soap.GetHostNumberOfEntries());
             Console.WriteLine("TotalBytesSent:       {0}", soap.GetTotalBytesSent());
             Console.WriteLine("TotalBytesReceived:   {0}", soap.GetTotalBytesReceived());
 
@@ -73,6 +72,16 @@ namespace FritzWebAccess
             Console.WriteLine("DslInterfaceInfo:     {0}", soap.GetDslInterfaceInfo());
             Console.WriteLine("ExternalIPAddress:    {0}", soap.GetExternalIPAddress());
             Console.WriteLine("WirelessLanInfo:      {0}", soap.GetWirelessLanInfo());
+
+            int numberOfHosts = soap.GetHostNumberOfEntries();
+            Console.WriteLine("HostNumberOfEntries:  {0}", numberOfHosts);
+            for( int i=0; i<numberOfHosts; i++)
+            {
+                Console.WriteLine("#{0} {1}", i, soap.GetGenericHostEntryExt(i));
+            }
+
+
+
 
             // *******************************************************************************************
 

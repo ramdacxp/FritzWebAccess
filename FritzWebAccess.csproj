@@ -48,6 +48,7 @@
     <Compile Include="FritzWebAccess.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SoapTypes\HostInfo.cs" />
     <Compile Include="SoapTypes\WirelessLanInfo.cs" />
     <Compile Include="SoapTypes\DslInterfaceInfo.cs" />
     <Compile Include="SoapTypes\CommonLinkProperties.cs" />
